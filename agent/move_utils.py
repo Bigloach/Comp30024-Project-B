@@ -72,9 +72,9 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
             except ValueError:
                 continue
 
-        # Find all possible hop sequences starting from this frog
-        get_valid_hops(frog)
-        valid_moves.append(GrowAction())
+    # Find all possible hop sequences starting from this frog
+    get_valid_hops(frog)
+    valid_moves.append(GrowAction())
 
     return valid_moves
 
