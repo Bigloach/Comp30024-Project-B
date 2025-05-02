@@ -4,10 +4,26 @@ from referee.game.constants import BOARD_N, MAX_TURNS
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
 # Defined states in the board
-BLUE = 0
+EMPTY = 0
 RED = 1
-LILY = 2
-EMPTY = 3
+BLUE = 2
+LILY = 3
+
+RED_DIRECTIONS = [
+    Direction.Right,
+    Direction.Left,
+    Direction.Down,
+    Direction.DownLeft,
+    Direction.DownRight,
+]
+
+BLUE_DIRECTIONS = [
+    Direction.Right,
+    Direction.Left,
+    Direction.Up,
+    Direction.UpLeft,
+    Direction.UpRight,
+]
 
 
 class AgentBoard:
@@ -18,7 +34,7 @@ class AgentBoard:
         self.blues = initial_blue
         self.turns = turns
 
-        if not initial_state:
+        if initial_state is None:
             self.state = np.zeros((BOARD_N, BOARD_N), dtype=np.int8)
             self.reds = set()
             self.blues = set()
@@ -54,12 +70,17 @@ class AgentBoard:
             dest_state = BLUE
 
         curr_pos = action.coord
+        is_single_move = False
 
-        try:
-            for dir in action.directions:
-                curr_pos = curr_pos + dir
-        except ValueError:
-            return
+        if len(action.directions) == 1:
+            dest = curr_pos + action.directions[0]
+            if self.state[dest.r, dest.c] not in [BLUE, RED]:
+                curr_pos = dest
+                is_single_move = True
+
+        if not is_single_move:
+            for dir in action.directions: 
+                curr_pos = curr_pos + dir + dir
 
         self.state[action.coord.r, action.coord.c] = EMPTY
         self.state[curr_pos.r, curr_pos.c] = dest_state

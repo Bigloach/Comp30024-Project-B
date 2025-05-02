@@ -1,5 +1,5 @@
 from collections import deque
-from .board import AgentBoard, BLUE, RED, LILY, EMPTY
+from .board import AgentBoard, BLUE, RED, LILY, EMPTY, RED_DIRECTIONS, BLUE_DIRECTIONS
 from referee.game import (
     BOARD_N,
     PlayerColor,
@@ -12,23 +12,13 @@ from referee.game import (
 
 def get_valid_moves(board: AgentBoard, color: PlayerColor):
     if color == PlayerColor.RED:
-        directions = [
-            Direction.Right,
-            Direction.Left,
-            Direction.Down,
-            Direction.DownLeft,
-            Direction.DownRight,
-        ]
+        directions = RED_DIRECTIONS
         player_frogs = board.reds
+        target_row = BOARD_N - 1
     else:
-        directions = [
-            Direction.Right,
-            Direction.Left,
-            Direction.Up,
-            Direction.UpLeft,
-            Direction.UpRight,
-        ]
+        directions = BLUE_DIRECTIONS
         player_frogs = board.blues
+        target_row = 0
 
     valid_moves = []
 
@@ -42,6 +32,8 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
             curr_pos, curr_path = queue.popleft()
 
             for dir in directions:
+                if curr_pos.r == target_row:
+                    continue 
                 try:
                     intermediate = curr_pos + dir
                     dest = intermediate + dir
@@ -55,25 +47,28 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
                         ):
                             if board.state[dest.r, dest.c] == LILY:
                                 visited.add(dest)
-                                valid_moves.append(MoveAction(src_cord, curr_path + [dir]))  # type: ignore
-                                queue.append((dest, curr_path + [dir]))
-                except ValueError:  # Catches coordinates out of board bound
+                                new_path = curr_path + [dir]
+                                valid_moves.append(MoveAction(src_cord, new_path))  # type: ignore
+                                queue.append((dest, new_path))
+                except (ValueError, IndexError):  # Catches coordinates out of board bound
                     continue
 
     # Iterate through each frog to find its possible moves (single steps and hops)
     for frog in player_frogs:
         for dir in directions:
+            if frog.r == target_row:
+                continue
             try:
                 dest = frog + dir
                 if is_in_board(dest) and board.state[dest.r, dest.c] == LILY:
                     valid_moves.append(
                         MoveAction(frog, dir)
                     )  # Single step is a path of length 1
-            except ValueError:
+            except (ValueError, IndexError):
                 continue
+        # Find all possible hop sequences starting from this frog
+        get_valid_hops(frog)
 
-    # Find all possible hop sequences starting from this frog
-    get_valid_hops(frog)
     valid_moves.append(GrowAction())
 
     return valid_moves

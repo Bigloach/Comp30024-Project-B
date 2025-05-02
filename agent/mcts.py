@@ -1,11 +1,16 @@
 import math
 import random
 import time
+
+from .eval_fun import evaluate_state
 from .board import AgentBoard
 from .move_utils import get_valid_moves
 from referee.game import PlayerColor, Action, MoveAction, GrowAction, Coord, Direction
 
-MAX_SIM_DEPTH = 30
+EXPLORE_WEIGHT = 1.0
+MAX_SIM_DEPTH = 20 
+SCALING_CONST = 200
+MAX_ITER = 500 
 
 
 class MCTS_node:
@@ -36,11 +41,11 @@ class MCTS_node:
 
         return child
 
-    def select(self, balance_weight=1.0):
+    def select(self):
         """
         Select a child based on UCB
         """
-        max_ucb = 0.0
+        max_ucb = -float("inf")
         max_child = None
 
         log_parent = math.log(self.playouts) if self.playouts != 0 else 0
@@ -49,10 +54,10 @@ class MCTS_node:
             if child[0].playouts == 0:
                 return child
 
-            exploit = -1.0 * (
+            exploit = -(
                 child[0].wins / child[0].playouts
             )  # times -1 for the parent opponent perspective
-            explore = balance_weight * math.sqrt(log_parent / child[0].playouts)
+            explore = EXPLORE_WEIGHT * math.sqrt(log_parent / child[0].playouts)
             ucb = exploit + explore
 
             if ucb > max_ucb:
@@ -77,34 +82,36 @@ class MCTS_node:
 
 
 def search_best_action(
-    root: MCTS_node, color: PlayerColor, time_limit: float, explore_weight: float
-):
-    curr_node = root
+    root: MCTS_node, time_limit=float("inf")
+) -> tuple[MCTS_node, Action]:
     start_time = time.perf_counter()
+    iterations = 0
 
-    while (time.perf_counter() - start_time) < time_limit:
-        while curr_node is not None and not curr_node.board.is_game_over:
+    while (time.perf_counter() - start_time) < time_limit and iterations < MAX_ITER:
+        curr_node = root
+        while curr_node is not None and not curr_node.board.is_game_over():
             if curr_node.actions is None or len(curr_node.actions) > 0:
                 break
-            curr_node = curr_node.select(explore_weight)
+            curr_node = curr_node.select()
 
-        if not curr_node.board.is_game_over and curr_node is not None:  # type: ignore
+        if not curr_node.board.is_game_over() and curr_node is not None:  # type: ignore
             if curr_node.actions is None or len(curr_node.actions) > 0:
                 curr_node = curr_node.expand()
 
-        # May need to tune the max_sim_depth with different values
-        result_score = simulation(curr_node.board.copy(), curr_node.turn_color, 30)  # type: ignore
+        reward = simulation(curr_node.board.copy(), curr_node.turn_color)  # type: ignore
+        result_score = math.tanh(reward / SCALING_CONST)
         curr_node.update_backwards(result_score)  # type: ignore
+        iterations += 1
 
-    return max(root.children, key=lambda child: child[0].playouts)[0]
+    return max(root.children, key=lambda child: child[0].playouts)
 
 
-def simulation(board: AgentBoard, player_color: PlayerColor, max_sim_depth: int):
+def simulation(board: AgentBoard, player_color: PlayerColor):
     curr_state = board
     turn_color = player_color
 
-    for i in range(max_sim_depth):
-        if curr_state.is_game_over:
+    for i in range(MAX_SIM_DEPTH):
+        if curr_state.is_game_over():
             return curr_state.get_game_result(player_color)
 
         actions = get_valid_moves(curr_state, turn_color)
@@ -114,6 +121,4 @@ def simulation(board: AgentBoard, player_color: PlayerColor, max_sim_depth: int)
         curr_state.apply_action(action, turn_color)
 
         turn_color = turn_color.opponent
-
-    # TODO: return evalution function result
-    return
+    return evaluate_state(curr_state, turn_color)
