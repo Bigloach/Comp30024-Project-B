@@ -19,8 +19,8 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_frogs = board.reds if color == PlayerColor.RED else board.blues
     opp_frogs = board.blues if color == PlayerColor.RED else board.reds
 
-    own_score = board.get_player_score(own_color)
-    opp_score = board.get_player_score(opp_color)
+    #own_score = board.get_player_score(own_color)
+    #opp_score = board.get_player_score(opp_color)
 
     own_distances = sum(
         frog.r if color == PlayerColor.BLUE else (7 - frog.r) for frog in own_frogs
@@ -73,8 +73,8 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
                 continue
 
     return float(
-        100.0 * (own_score - opp_score)
-        + 20.0 * advancement
+        #100.0 * (own_score - opp_score) +
+        20.0 * advancement
         + 10.0 * pad_count 
         + 3.0 * jump_opportunities
         - 2.0 * threat_level
