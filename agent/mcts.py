@@ -8,9 +8,9 @@ from .move_utils import get_valid_moves
 from referee.game import PlayerColor, Action, MoveAction, GrowAction, Coord, Direction
 
 EXPLORE_WEIGHT = 1.0
-MAX_SIM_DEPTH = 20 
+MAX_SIM_DEPTH = 30 
 SCALING_CONST = 200
-MAX_ITER = 300 
+MAX_ITER = 500 
 
 
 class MCTS_node:
