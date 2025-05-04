@@ -8,7 +8,7 @@ from referee.game import PlayerColor
 from referee.game.actions import MoveAction
 from referee.game.constants import BOARD_N
 from referee.game.coord import Direction
-from .board import BLUE_DIRECTIONS, LILY, RED, BLUE, EMPTY, RED_DIRECTIONS, AgentBoard
+from .board import BLUE_DIRECTIONS, LILY, RED, BLUE, RED_DIRECTIONS, AgentBoard
 from .move_utils import is_in_board
 
 
@@ -74,13 +74,12 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
                         threat_level += 1
             except ValueError:
                 continue
-
     return float(
         #100.0 * (own_score - opp_score) +
-        75.0 * advancement
-        + 10.0 * pad_count 
-        + 5.0 * jump_opportunities
-        - 2.0 * threat_level
+        advancement
+        # + 10.0 * pad_count 
+        # + 5.0 * jump_opportunities
+        # - 2.0 * threat_level
     )
 
 
@@ -89,7 +88,6 @@ def choose_with_heuristic(actions, board: AgentBoard, color: PlayerColor):
     HOP_SCORE = 6.0
     FORWARD_SCORE = 5.0
     FORWARD_MULT = 2.0
-    GROW_SCORE = 0.5
 
     if len(actions) == 1:
         return actions[0]
@@ -115,6 +113,7 @@ def choose_with_heuristic(actions, board: AgentBoard, color: PlayerColor):
 
             if dest.r == dest_row:
                 score += END_SCORE 
+
          
         action_scores.append(score)
 
