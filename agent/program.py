@@ -6,7 +6,7 @@ from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
 TIME_FRACTION = 0.05
-MAX_TURN_TIME = 5
+MAX_TURN_TIME = 3
 MIN_TURN_TIME = 0.3
 
 
@@ -44,23 +44,26 @@ class Agent:
 
         time_remaining = referee["time_remaining"]
         time_limit = MAX_TURN_TIME
+        BOUNDRY = 0.05
 
-        if time_remaining is not None:
-            time_limit = time_remaining * TIME_FRACTION  # type: ignore
-            if time_limit > MAX_TURN_TIME:
-                time_limit = MAX_TURN_TIME
-            elif time_remaining < time_limit < MIN_TURN_TIME:
-                time_limit = MIN_TURN_TIME
-            elif time_limit < time_remaining:
-                time_limit = time_remaining
+        if time_remaining > BOUNDRY:  # type: ignore
+            calculated_limit = time_remaining * TIME_FRACTION  # type: ignore
+            time_limit = min(MAX_TURN_TIME, time_remaining - BOUNDRY, calculated_limit)  # type: ignore
+            time_limit = max(MIN_TURN_TIME, time_limit)
+            if time_remaining < MIN_TURN_TIME + BOUNDRY:  # type: ignore
+                time_limit = max(0.01, time_remaining - BOUNDRY)  # type: ignore
 
+        else:
+            time_limit = MIN_TURN_TIME
+
+        time_limit = max(0.01, time_limit)
         if (
             self.mcts_root is None
             or self.mcts_root.board.state.tobytes() != self.board.state.tobytes()  # type: ignore
         ):
             self.mcts_root = MCTS_node(self.board.copy(), self._color, None)
 
-        child, action = search_best_action(self.mcts_root) # type: ignore
+        child, action = search_best_action(self.mcts_root, time_limit)  # type: ignore
 
         if child:
             self.mcts_root = child
