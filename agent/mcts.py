@@ -9,7 +9,7 @@ from referee.game import PlayerColor, Action, MoveAction, GrowAction, Coord, Dir
 
 EXPLORE_WEIGHT = 1.0
 MAX_SIM_DEPTH = 20 
-SCALING_CONST = 200
+SCALING_CONST = 150
 MAX_ITER = 500 
 
 

@@ -34,7 +34,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
 
     pad_count = 0
     for frog in own_frogs:
-        for dir in own_directions:
+        for dir in own_directions[2:]:
             try:
                 adj = frog + dir
                 if is_in_board(adj) and board.state[adj.r, adj.c] == LILY:
@@ -54,7 +54,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
                         and board.state[dest.r, dest.c] == LILY
                     ):
                         jump_opportunities += 1
-            except:
+            except ValueError:
                 continue
 
     threat_level = 0
@@ -69,14 +69,14 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
                         and board.state[dest.r, dest.c] == LILY
                     ):
                         threat_level += 1
-            except:
+            except ValueError:
                 continue
 
     return float(
         #100.0 * (own_score - opp_score) +
-        20.0 * advancement
+        75.0 * advancement
         + 10.0 * pad_count 
-        + 3.0 * jump_opportunities
+        + 5.0 * jump_opportunities
         - 2.0 * threat_level
     )
 
