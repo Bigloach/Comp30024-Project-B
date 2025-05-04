@@ -70,16 +70,12 @@ class AgentBoard:
             dest_state = BLUE
 
         curr_pos = action.coord
-        is_single_move = False
+        is_single_move = self.is_single_move(action)
 
-        if len(action.directions) == 1:
-            dest = curr_pos + action.directions[0]
-            if self.state[dest.r, dest.c] not in [BLUE, RED]:
-                curr_pos = dest
-                is_single_move = True
-
-        if not is_single_move:
-            for dir in action.directions: 
+        if is_single_move:
+            curr_pos += action.directions[0]
+        else:
+            for dir in action.directions:
                 curr_pos = curr_pos + dir + dir
 
         self.state[action.coord.r, action.coord.c] = EMPTY
@@ -157,6 +153,13 @@ class AgentBoard:
             return np.sum(self.state[BOARD_N - 1, :] == RED)
         else:
             return np.sum(self.state[0, :] == BLUE)
+
+    def is_single_move(self, action: MoveAction):
+        if len(action.directions) == 1:
+            dest = action.coord + action.directions[0]
+            if self.state[dest.r, dest.c] == LILY:
+                return True
+        return False
 
     def copy(self):
         return AgentBoard(

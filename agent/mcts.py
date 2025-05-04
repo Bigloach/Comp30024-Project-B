@@ -2,7 +2,7 @@ import math
 import random
 import time
 
-from .eval_fun import evaluate_state
+from .eval_fun import choose_with_heuristic, evaluate_state
 from .board import AgentBoard
 from .move_utils import get_valid_moves
 from referee.game import PlayerColor, Action, MoveAction, GrowAction, Coord, Direction
@@ -117,7 +117,7 @@ def simulation(board: AgentBoard, player_color: PlayerColor):
         actions = get_valid_moves(curr_state, turn_color)
 
         # TODO: may choose based on herustic
-        action = random.choice(actions)
+        action = choose_with_heuristic(actions, curr_state, turn_color)
         curr_state.apply_action(action, turn_color)
 
         turn_color = turn_color.opponent
