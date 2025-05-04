@@ -6,7 +6,7 @@ from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
 TIME_FRACTION = 0.05
-MAX_TURN_TIME = 4
+MAX_TURN_TIME = 3.5
 MIN_TURN_TIME = 0.3
 
 class Agent:
@@ -62,7 +62,7 @@ class Agent:
         ):
             self.mcts_root = MCTS_node(self.board.copy(), self._color, None)
 
-        child, action = search_best_action(self.mcts_root)  # type: ignore
+        child, action = search_best_action(self.mcts_root, time_limit)  # type: ignore
 
         if child:
             self.mcts_root = child
