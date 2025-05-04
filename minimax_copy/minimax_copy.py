@@ -22,7 +22,7 @@ from referee.game import PlayerColor, Action, MoveAction, GrowAction
 
     #return sorted(actions, key=action_score, reverse=True)
 
-def minimax(
+def minimax_copy(
     board: AgentBoard,
     turn_color: PlayerColor,
     depth: int,
@@ -44,7 +44,7 @@ def minimax(
         for action in actions:
             new_board = board.copy()
             new_board.apply_action(action, turn_color)
-            eval, _ = minimax(
+            eval, _ = minimax_copy(
                 new_board,
                 turn_color.opponent,
                 depth - 1,
@@ -65,7 +65,7 @@ def minimax(
         for action in actions:
             new_board = board.copy()
             new_board.apply_action(action, turn_color)
-            eval, _ = minimax(
+            eval, _ = minimax_copy(
                 new_board, turn_color.opponent, depth - 1, alpha, beta, True, root_color
             )
             if eval < minEval:
