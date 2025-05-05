@@ -107,11 +107,11 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
             break
 
     return float(
-        # 50 * (own_score - opp_score)
-        +10 * advancement
-        # + 3.0 * pad_count
-        # + 5.0 * jump_opportunities
-        # + 4.0 * jump_used_bonus
-        # - 4.0 * threat_level
-        + line_value
+        # 50 * (own_score - opp_score) +
+        10.0 * advancement +
+        #  3.0 * pad_count -
+        #  5.0 * jump_opportunities +
+        #  4.0 * jump_used_bonus -
+        #  4.0 * threat_level +
+        1.0 * line_value
     )

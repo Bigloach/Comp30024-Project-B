@@ -48,9 +48,6 @@ class Agent:
             True,
             self._color,
         )
-        if best_action is None:
-            valid_moves = get_valid_moves(self.board, self._color)
-            best_action = random.choice(valid_moves) 
         return best_action
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):

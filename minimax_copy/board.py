@@ -1,5 +1,6 @@
 import numpy as np
 
+from minimax.utils import is_within_board
 from referee.game.constants import BOARD_N, MAX_TURNS
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
@@ -24,6 +25,17 @@ BLUE_DIRECTIONS = [
     Direction.UpLeft,
     Direction.UpRight,
 ]
+
+DIRECTION_DICT = {
+    Direction.Up: (-1, 0),
+    Direction.UpRight: (-1, 1),
+    Direction.Right: (0, 1),
+    Direction.DownRight: (1, 1),
+    Direction.Down: (1, 0),
+    Direction.DownLeft: (1, -1),
+    Direction.Left: (0, -1),
+    Direction.UpLeft: (-1, -1),
+}
 
 
 class AgentBoard:
@@ -50,8 +62,8 @@ class AgentBoard:
             for c in range(1, BOARD_N - 1):
                 self.state[0, c] = RED
                 self.state[BOARD_N - 1, c] = BLUE
-                self.reds.add(Coord(0, c))
-                self.blues.add(Coord(BOARD_N - 1, c))
+                self.reds.add((0, c))
+                self.blues.add((BOARD_N - 1, c))
 
     def apply_action(self, action: Action, color: PlayerColor):
         match action:
@@ -69,25 +81,28 @@ class AgentBoard:
         else:
             dest_state = BLUE
 
-        curr_pos = action.coord
+        action_r, action_c = action.coord.r, action.coord.c
+        curr_pos_r, curr_pos_c = action_r, action_c
         is_single_move = self.is_single_move(action)
 
         if is_single_move:
-            curr_pos += action.directions[0]
+            curr_pos_r += action.directions[0].r
+            curr_pos_c += action.directions[0].c
         else:
             for dir in action.directions:
-                curr_pos = curr_pos + dir + dir
+                curr_pos_r += dir.r + dir.r
+                curr_pos_c += dir.c + dir.c
 
-        self.state[action.coord.r, action.coord.c] = EMPTY
-        self.state[curr_pos.r, curr_pos.c] = dest_state
+        self.state[action_r, action_c] = EMPTY
+        self.state[curr_pos_r, curr_pos_c] = dest_state
 
         # Update red or blue set of the board
         if dest_state == RED:
-            self.reds.remove(action.coord)
-            self.reds.add(curr_pos)
+            self.reds.remove((action_r, action_c))
+            self.reds.add((curr_pos_r, curr_pos_c))
         else:
-            self.blues.remove(action.coord)
-            self.blues.add(curr_pos)
+            self.blues.remove((action_r, action_c))
+            self.blues.add((curr_pos_r, curr_pos_c))
 
         self.turns += 1
 
@@ -100,16 +115,14 @@ class AgentBoard:
 
         neighbour_cells = set()
         for cell in player_cells:
-            for direction in Direction:
-                try:
-                    neighbour = cell + direction
+            for direction in DIRECTION_DICT.values():
+                neighbour = (cell[0] + direction[0], cell[1] + direction[1])
+                if is_within_board(neighbour):
                     neighbour_cells.add(neighbour)
-                except ValueError:
-                    continue
 
         for cell in neighbour_cells:
-            if self.state[cell.r, cell.c] == EMPTY:
-                self.state[cell.r, cell.c] = LILY
+            if self.state[cell[0], cell[1]] == EMPTY:
+                self.state[cell[0], cell[1]] = LILY
 
         self.turns += 1
 
