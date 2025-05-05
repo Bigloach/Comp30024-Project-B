@@ -36,7 +36,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
         own_distances += distance
 
     opp_distances = sum(
-        frog[0] if color == PlayerColor.RED else (7 - frog[0]) for frog in opp_frogs
+        frog[0] if color == PlayerColor.RED else (BOARD_N - 1 - frog[0]) for frog in opp_frogs
     )
 
     advancement = opp_distances - own_distances
@@ -45,44 +45,42 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     # for frog in own_frogs:
     #     for dir in own_directions:
     #         try:
-    #             adj = frog + dir
-    #             if is_in_board(adj) and board.state[adj.r, adj.c] == LILY:
+    #             adj = (frog[0] + dir.r, frog[1] + dir.c)
+    #             if is_in_board(adj) and board.state[adj[0], adj[1]] == LILY:
     #                 pad_count += 1
     #         except ValueError:
     #             continue
 
-    # jump_opportunities = 0
-    # jump_used_bonus = 0
-    # for frog in own_frogs:
-    #     for dir in own_directions:
-    #         try:
-    #             mid = frog + dir
-    #             dest = mid + dir
-    #             if is_in_board(dest):
-    #                 if (
-    #                     board.state[mid.r, mid.c] in [RED, BLUE]
-    #                     and board.state[dest.r, dest.c] == LILY
-    #                 ):
-    #                     jump_opportunities += 1
-    #                     if (color == PlayerColor.RED and dest.r >= frog.r) or (color == PlayerColor.BLUE and dest.r <= frog.r):
-    #                         jump_used_bonus += 1
-    #         except:
-    #             continue
+    jump_used_bonus = 0
+    for frog in own_frogs:
+        for dir in own_directions:
+            try:
+                mid = (frog[0] + dir.r, frog[1] + dir.c)
+                dest = (mid[0] + dir.r, mid[1] + dir.c)
+                if is_in_board(dest):
+                    if (
+                        board.state[mid[0], mid[1]] in [RED, BLUE]
+                        and board.state[dest[0], dest[1]] == LILY
+                    ):
+                        if (color == PlayerColor.RED and dest[0] > frog[0]) or (color == PlayerColor.BLUE and dest[0] < frog[0]):
+                            jump_used_bonus += 1
+            except:
+                continue
 
-    # threat_level = 0
-    # for frog in opp_frogs:
-    #     for dir in opp_directions:
-    #         try:
-    #             mid = frog + dir
-    #             dest = mid + dir
-    #             if is_in_board(dest):
-    #                 if (
-    #                     board.state[mid.r, mid.c] in [RED, BLUE]
-    #                     and board.state[dest.r, dest.c] == LILY
-    #                 ):
-    #                     threat_level += 1
-    #         except:
-    #             continue
+    threat_level = 0
+    for frog in opp_frogs:
+        for dir in opp_directions:
+            try:
+                mid = (frog[0] + dir.r, frog[1] + dir.c)
+                dest = (mid[0] + dir.r, mid[1] + dir.c)
+                if is_in_board(dest):
+                    if (
+                        board.state[mid[0], mid[1]] in [RED, BLUE]
+                        and board.state[dest[0], dest[1]] == LILY
+                    ):
+                        threat_level += 1
+            except:
+                continue
 
     line_value = 0
     for frog in own_frogs:
@@ -93,9 +91,9 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
             for col in range(BOARD_N):
                 cell = board.state[end_row, col]
                 if cell == LILY:
-                    line_value += 10
+                    line_value += 4
                 elif cell == EMPTY:
-                    line_value += 5
+                    line_value += 3
                 elif (cell == BLUE and color == PlayerColor.RED) or (
                     cell == RED and color == PlayerColor.BLUE
                 ):
@@ -109,9 +107,8 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     return float(
         # 50 * (own_score - opp_score) +
         10.0 * advancement +
-        #  3.0 * pad_count -
-        #  5.0 * jump_opportunities +
-        #  4.0 * jump_used_bonus -
-        #  4.0 * threat_level +
+        # 0.5 * pad_count +
+        3.0 * jump_used_bonus -
+        2.0 * threat_level +
         1.0 * line_value
     )

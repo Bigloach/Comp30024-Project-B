@@ -7,7 +7,7 @@ from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 import random
 
-DEPTH=5
+DEPTH=4
 
 class Agent:
     """

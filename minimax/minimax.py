@@ -46,13 +46,7 @@ def minimax(
             new_board = board.copy()
             new_board.apply_action(action, turn_color)
             eval, _ = minimax(
-                new_board,
-                turn_color.opponent,
-                depth - 1,
-                alpha,
-                beta,
-                False,
-                root_color,
+                new_board, turn_color.opponent, depth - 1, alpha, beta, False, root_color,
             )
             if eval > maxEval:
                 maxEval = eval

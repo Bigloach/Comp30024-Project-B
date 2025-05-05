@@ -93,9 +93,9 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
             for col in range(BOARD_N):
                 cell = board.state[end_row, col]
                 if cell == LILY:
-                    line_value += 10
+                    line_value += 4
                 elif cell == EMPTY:
-                    line_value += 5
+                    line_value += 3
                 elif (cell == BLUE and color == PlayerColor.RED) or (
                     cell == RED and color == PlayerColor.BLUE
                 ):
@@ -109,7 +109,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     return float(
         # 50 * (own_score - opp_score) +
         10.0 * advancement +
-        #  3.0 * pad_count -
+        #  0.5 * pad_count -
         #  5.0 * jump_opportunities +
         #  4.0 * jump_used_bonus -
         #  4.0 * threat_level +
