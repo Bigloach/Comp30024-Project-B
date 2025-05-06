@@ -4,10 +4,19 @@ possible herustics for simulation
 """
 
 from referee.game import PlayerColor
-from referee.game.actions import MoveAction
+from referee.game.actions import Action, GrowAction, MoveAction
 from referee.game.constants import BOARD_N
 from referee.game.coord import Direction
-from .board import BLUE_DIRECTIONS, LILY, RED, BLUE, EMPTY, RED_DIRECTIONS, AgentBoard
+from .board import (
+    BLUE_DIRECTIONS,
+    DIRECTION_DICT,
+    LILY,
+    RED,
+    BLUE,
+    EMPTY,
+    RED_DIRECTIONS,
+    AgentBoard,
+)
 from .utils import is_in_board
 
 
@@ -26,7 +35,9 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_distances = 0
     for frog in own_frogs:
         distance = frog[0] if color == PlayerColor.BLUE else (BOARD_N - 1 - frog[0])
-        if (color == PlayerColor.RED and frog[0] >= 4) or (color == PlayerColor.BLUE and frog[0] <= 3):
+        if (color == PlayerColor.RED and frog[0] >= 4) or (
+            color == PlayerColor.BLUE and frog[0] <= 3
+        ):
             for dc in [-1, 0, 1]:
                 col = frog[1] + dc
                 if 0 <= col < BOARD_N:
@@ -38,7 +49,9 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     opp_distances = 0
     for frog in opp_frogs:
         distance = frog[0] if color == PlayerColor.RED else (BOARD_N - 1 - frog[0])
-        if (color == PlayerColor.RED and frog[0] <= 3) or (color == PlayerColor.BLUE and frog[0] >= 4):
+        if (color == PlayerColor.RED and frog[0] <= 3) or (
+            color == PlayerColor.BLUE and frog[0] >= 4
+        ):
             for dc in [-1, 0, 1]:
                 col = frog[1] + dc
                 if 0 <= col < BOARD_N:
@@ -94,20 +107,35 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
                 elif cell == EMPTY:
                     line_value += 3
                 elif (cell == BLUE and color == PlayerColor.RED) or (
-                    cell == RED and color == PlayerColor.BLUE):
+                    cell == RED and color == PlayerColor.BLUE
+                ):
                     line_value += 2
                 elif (cell == RED and color == PlayerColor.RED) or (
-                    cell == BLUE and color == PlayerColor.BLUE):
+                    cell == BLUE and color == PlayerColor.BLUE
+                ):
                     line_value += 1
             break
 
     # Final weighted score combining all heuristics
     return float(
         # 50.0 * (own_score - opp_score) +
-        10.0 * advancement 
+        10.0 * advancement
         # + 0.5 * pad_count
         # + 5.0 * jump_opportunities
         # + 4.0 * jump_used_bonus
         # - 4.0 * threat_level
         + 1.0 * line_value
     )
+
+
+def action_heuristic(action: Action):
+    heuristic = 0.0
+    grow_score = 0.5
+    forward_mult = 3
+    if isinstance(action, GrowAction):
+        return grow_score
+
+    heuristic = heuristic + len(action.directions)
+    for move in action.directions:
+        heuristic += abs(DIRECTION_DICT[move][0] * forward_mult)
+    return heuristic
