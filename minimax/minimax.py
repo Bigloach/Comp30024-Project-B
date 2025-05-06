@@ -1,5 +1,5 @@
 # === File: minimax.py ===
-from .eval_fun import action_heuristic, action_heuristic_adv, evaluate_state
+from .eval_fun import action_heuristic, evaluate_state
 from .move_utils import get_valid_moves
 from .board import AgentBoard
 from referee.game import PlayerColor, Action, MoveAction, GrowAction
