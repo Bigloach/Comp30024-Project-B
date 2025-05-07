@@ -98,5 +98,3 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
     valid_moves.append(GrowAction())
 
     return valid_moves
-
-

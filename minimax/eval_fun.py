@@ -21,6 +21,8 @@ from .board import (
 from .utils import is_in_board, is_within_board
 
 
+
+
 def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_frogs = board.reds if color == PlayerColor.RED else board.blues
     opp_frogs = board.blues if color == PlayerColor.RED else board.reds
@@ -65,7 +67,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
 
     advancement = opp_distances - own_distances
 
-    average_row = row_sum / (BOARD_N - 2) 
+    average_row = row_sum / (BOARD_N - 2)
     center_bias = -abs(average_row - (BOARD_N - 1 if color == PlayerColor.RED else 0))
 
     jump_opportunities = 0
@@ -139,10 +141,31 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     )
 
 
+
+def action_heuristic_color(action: Action, color: PlayerColor):
+    heuristic = 0.0
+    grow_score = 2.0
+    forward_mult = 4.0
+    forward_sign = 1
+    forward_mult *= forward_sign
+    if color == PlayerColor.BLUE:
+        forward_sign = -1
+    if isinstance(action, GrowAction):
+        return grow_score
+
+    heuristic = heuristic + len(action.directions)
+    for move in action.directions:
+        dr = DIRECTION_DICT[move][0]
+        if dr != 0:
+            heuristic += dr * forward_mult
+        else:
+            heuristic += 1
+    return heuristic
+
 def action_heuristic(action: Action):
     heuristic = 0.0
     grow_score = 2.0
-    forward_mult = 4
+    forward_mult = 4.0
     if isinstance(action, GrowAction):
         return grow_score
 

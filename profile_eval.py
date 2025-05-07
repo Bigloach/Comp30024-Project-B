@@ -6,7 +6,7 @@ import numpy as np
 
 from minimax.board import AgentBoard, PlayerColor, RED, BLUE, LILY, EMPTY, BOARD_N
 from minimax.eval_fun import evaluate_state
-from minimax.minimax import minimax
+from minimax.minimax import minimax,minimax_k
 
 # from minimax_copy.eval_fun import evaluate_state
 from referee.game import Coord
@@ -58,7 +58,8 @@ def run_copy(board, iterations=1000):
 
 def run_minimax(board, iterations=10):
     for i in range(iterations):
-        minimax(
+        killer_actions = [[None, None] for i in range(5)]
+        minimax_k(
             board.copy(),
             PlayerColor.RED,
             5,
@@ -66,6 +67,7 @@ def run_minimax(board, iterations=10):
             float("inf"),
             True,
             PlayerColor.RED,
+            killer_actions
         )
 
 

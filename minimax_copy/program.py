@@ -1,13 +1,14 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from .minimax_copy import minimax_copy
+from .minimax_copy import minimax_copy, minimax_k_copy
 from .move_utils import get_valid_moves
 from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 import random
 
-DEPTH=5
+DEPTH = 5 
+
 
 class Agent:
     """
@@ -39,7 +40,8 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
-        _, best_action = minimax_copy(
+        killer_actions = [[None, None] for i in range(DEPTH)]
+        _, best_action = minimax_k_copy(
             self.board.copy(),
             self._color,
             DEPTH,
@@ -47,6 +49,7 @@ class Agent:
             float("inf"),
             True,
             self._color,
+            killer_actions,
         )
         return best_action
 
@@ -61,3 +64,4 @@ class Agent:
         # action for demonstration purposes. You should replace this with your
         # own logic to update your agent's internal game state representation.
         self.board.apply_action(action, color)
+        print(referee["time_remaining"])
