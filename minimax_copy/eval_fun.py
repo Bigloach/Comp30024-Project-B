@@ -3,6 +3,7 @@ This file contains evaluation function for cut off and
 possible herustics for simulation
 """
 
+from minimax_copy.move_utils import BLUE_DIR, RED_DIR
 from referee.game import PlayerColor
 from referee.game.actions import Action, GrowAction, MoveAction
 from referee.game.constants import BOARD_N
@@ -23,8 +24,8 @@ from .utils import is_in_board
 def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_frogs = board.reds if color == PlayerColor.RED else board.blues
     opp_frogs = board.blues if color == PlayerColor.RED else board.reds
-    own_directions = RED_DIRECTIONS if color == PlayerColor.RED else BLUE_DIRECTIONS
-    opp_directions = BLUE_DIRECTIONS if color == PlayerColor.RED else RED_DIRECTIONS
+    own_directions = RED_DIR if color == PlayerColor.RED else BLUE_DIR
+    opp_directions = BLUE_DIR if color == PlayerColor.RED else RED_DIR
 
     own_distances = 0
     row_sum = 0
@@ -94,7 +95,7 @@ def action_heuristic(action: Action):
 
     heuristic = heuristic + len(action.directions)
     for move in action.directions:
-        dr, dc = DIRECTION_DICT[move]
+        dr = DIRECTION_DICT[move][0]
         if dr != 0:
             heuristic += abs(dr * forward_mult)
         else:

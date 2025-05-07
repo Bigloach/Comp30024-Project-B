@@ -25,7 +25,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_frogs = board.reds if color == PlayerColor.RED else board.blues
     opp_frogs = board.blues if color == PlayerColor.RED else board.reds
     own_directions = RED_DIR if color == PlayerColor.RED else BLUE_DIR
-    opp_directions = BLUE_DIRECTIONS if color == PlayerColor.RED else RED_DIRECTIONS
+    opp_directions = BLUE_DIR if color == PlayerColor.RED else RED_DIR
 
     # Amount of frog get to the end line
     # own_score = board.get_player_score(RED if color == PlayerColor.RED else BLUE)
