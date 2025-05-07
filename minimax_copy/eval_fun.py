@@ -54,7 +54,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
 
     advancement = opp_distances - own_distances
 
-    average_row = row_sum / len(own_frogs) if own_frogs else 0
+    average_row = row_sum / (BOARD_N - 2)
     center_bias = -abs(average_row - (BOARD_N - 1 if color == PlayerColor.RED else 0))
 
     line_value = 0
