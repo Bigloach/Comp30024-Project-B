@@ -1,7 +1,7 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from .minimax import minimax_k, negamax
+from .minimax import negamax
 from .move_utils import get_valid_moves
 from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction

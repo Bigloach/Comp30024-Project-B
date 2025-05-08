@@ -1,6 +1,6 @@
 import numpy as np
 
-from minimax.utils import is_within_board
+
 from referee.game.constants import BOARD_N, MAX_TURNS
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
@@ -117,7 +117,7 @@ class AgentBoard:
         for cell in player_cells:
             for direction in DIRECTION_DICT.values():
                 neighbour = (cell[0] + direction[0], cell[1] + direction[1])
-                if is_within_board(neighbour):
+                if 0 <= neighbour[0] < BOARD_N and 0 <= neighbour[1] < BOARD_N:
                     neighbour_cells.add(neighbour)
 
         for cell in neighbour_cells:

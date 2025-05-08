@@ -6,7 +6,7 @@ import numpy as np
 
 from minimax.board import AgentBoard, PlayerColor, RED, BLUE, LILY, EMPTY, BOARD_N
 from minimax.eval_fun import evaluate_state
-from minimax.minimax import minimax_k, negamax
+from minimax.minimax import negamax
 
 # from minimax_copy.eval_fun import evaluate_state
 from referee.game import Coord

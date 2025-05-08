@@ -119,11 +119,12 @@ def action_heuristic(action: Action, color: PlayerColor, killer_actions):
     forward_sign = 1
     killer_score = 100.0
     forward_mult *= forward_sign
-
-    if action == killer_actions[0]:
-        return killer_score
-    elif action == killer_actions[1]:
-        return killer_score - 1
+    
+    if killer_actions is not None:
+        if action == killer_actions[0]:
+            return killer_score
+        elif action == killer_actions[1]:
+            return killer_score - 1
 
     if color == PlayerColor.BLUE:
         forward_sign = -1

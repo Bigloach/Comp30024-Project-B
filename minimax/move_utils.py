@@ -94,30 +94,3 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
     valid_moves.append(GrowAction())
 
     return valid_moves
-
-
-def is_quiet(board: AgentBoard, color: PlayerColor):
-    if color == PlayerColor.RED:
-        directions = RED_DIR
-        player_frogs = board.reds
-    else:
-        directions = BLUE_DIR
-        player_frogs = board.blues
-
-    for frog in player_frogs:
-        for dir in directions.values():
-            mid = (frog[0] + dir[0], frog[1] + dir[1])
-            dest = (mid[0] + dir[0], mid[1] + dir[1])
-            if (
-                0 <= mid[0] < BOARD_N
-                and 0 <= mid[1] < BOARD_N
-                and 0 <= dest[0] < BOARD_N
-                and 0 <= dest[1] < BOARD_N
-            ):
-                if (
-                    board.state[mid[0], mid[1]] in [RED, BLUE]
-                    and board.state[dest[0], dest[1]] == LILY
-                ):
-                    return False
-
-    return True
