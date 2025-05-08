@@ -25,12 +25,6 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     own_frogs = board.reds if color == PlayerColor.RED else board.blues
     opp_frogs = board.blues if color == PlayerColor.RED else board.reds
     own_directions = RED_DIR if color == PlayerColor.RED else BLUE_DIR
-    opp_directions = BLUE_DIR if color == PlayerColor.RED else RED_DIR
-
-    # Amount of frog get to the end line
-    # own_score = board.get_player_score(RED if color == PlayerColor.RED else BLUE)
-    # opp_score = board.get_player_score(BLUE if color == PlayerColor.RED else RED)
-
     own_distances = 0
     row_sum = 0
     col_counter = [0] * BOARD_N
@@ -108,25 +102,7 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
     spread_penalty = max(col_counter) - min(col_counter)
     column_avoidance_penalty = sum(col_counter[c] for c in dangerous_cols)
 
-    # Count how many lily pads are adjacent to own frogs
-    # pad_count = 0
-    # for frog in own_frogs:
-    #     for dir in own_directions:
-    #         adj = (frog[0] + dir.r, frog[1] + dir.c)
-    #         if is_in_board(adj) and board.state[adj[0], adj[1]] == LILY:
-    #             pad_count += 1
-
-    # Estimate how many of opponent's frogs can threaten own frogs by jumping
-    # threat_level = 0
-    # for frog in opp_frogs:
-    #     for dir in opp_directions:
-    #         mid = (frog[0] + dir.r, frog[1] + dir.c)
-    #         dest = (mid[0] + dir.r, mid[1] + dir.c)
-    #         if is_in_board(dest):
-    #             if board.state[mid[0], mid[1]] in [RED, BLUE] and board.state[dest[0], dest[1]] == LILY:
-    #                 threat_level += 1
-
-    return float(
+    return (
         15.0 * advancement
         + 1.0 * line_value
         + 3.0 * center_bias
@@ -134,8 +110,6 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
         + 5.0 * jump_used_bonus
         - 2.0 * spread_penalty
         - 3.0 * column_avoidance_penalty
-        # + 0.5 * pad_count
-        # - 4.0 * threat_level
     )
 
 

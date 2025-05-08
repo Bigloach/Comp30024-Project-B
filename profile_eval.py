@@ -6,7 +6,7 @@ import numpy as np
 
 from minimax.board import AgentBoard, PlayerColor, RED, BLUE, LILY, EMPTY, BOARD_N
 from minimax.eval_fun import evaluate_state
-from minimax.minimax import minimax,minimax_k
+from minimax.minimax import minimax_k, negamax
 
 # from minimax_copy.eval_fun import evaluate_state
 from referee.game import Coord
@@ -59,16 +59,16 @@ def run_copy(board, iterations=1000):
 def run_minimax(board, iterations=10):
     for i in range(iterations):
         killer_actions = [[None, None] for i in range(5)]
-        minimax_k(
-            board.copy(),
-            PlayerColor.RED,
-            5,
-            float("-inf"),
-            float("inf"),
-            True,
-            PlayerColor.RED,
-            killer_actions
-        )
+        for depth in range(1, 6):
+            negamax(
+                board.copy(),
+                depth,
+                PlayerColor.RED,
+                float("-inf"),
+                float("inf"),
+                PlayerColor.RED,
+                killer_actions,
+            )
 
 
 if __name__ == "__main__":
@@ -87,6 +87,6 @@ if __name__ == "__main__":
     ps = pstats.Stats(profiler, stream=s).sort_stats(sort)
 
     # print the first 30 rows
-    ps.print_stats(30)
+    ps.print_stats(20)
     print(s.getvalue())
     print("--- End Report ---")

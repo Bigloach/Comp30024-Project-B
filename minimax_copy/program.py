@@ -5,7 +5,6 @@ from .minimax_copy import minimax_copy, minimax_k_copy
 from .move_utils import get_valid_moves
 from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
-import random
 
 DEPTH = 5 
 

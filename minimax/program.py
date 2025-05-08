@@ -1,7 +1,7 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from .minimax import minimax, minimax_k
+from .minimax import minimax_k, negamax
 from .move_utils import get_valid_moves
 from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
@@ -40,16 +40,17 @@ class Agent:
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
         killer_actions = [[None, None] for i in range(DEPTH)]
-        _, best_action = minimax_k(
-            self.board.copy(),
-            self._color,
-            DEPTH,
-            float("-inf"),
-            float("inf"),
-            True,
-            self._color,
-            killer_actions,
-        )
+        for depth in range(1, DEPTH + 1):
+            best_action = negamax(
+                self.board.copy(),
+                depth,
+                self._color,
+                float("-inf"),
+                float("inf"),
+                self._color,
+                killer_actions,
+            )[1]
+
         return best_action
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
