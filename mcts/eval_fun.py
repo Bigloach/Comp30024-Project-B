@@ -3,18 +3,11 @@ This file contains evaluation function for cut off and
 possible herustics for simulation
 """
 
-from minimax.move_utils import BLUE_DIR, RED_DIR
+from mcts.move_utils import BLUE_DIR, RED_DIR
 from referee.game import PlayerColor
-from referee.game.actions import Action, GrowAction
+from referee.game.actions import MoveAction
 from referee.game.constants import BOARD_N
-from .board import (
-    DIRECTION_DICT,
-    LILY,
-    RED,
-    BLUE,
-    EMPTY,
-    AgentBoard,
-)
+from .board import LILY, RED, BLUE, EMPTY, AgentBoard
 
 
 def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
@@ -116,33 +109,3 @@ def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
         - 2 * uneven_frogs_penalty
         - 3 * column_blocking
     )
-
-
-def action_heuristic(action: Action, color: PlayerColor, killer_actions):
-    heuristic = 0.0
-    grow_score = 2.0
-    forward_mult = 4.0
-    forward_sign = 1
-    killer_score = 100.0
-    forward_mult *= forward_sign
-
-    if killer_actions is not None:
-        if action == killer_actions[0]:
-            return killer_score
-        elif action == killer_actions[1]:
-            return killer_score - 1
-
-    if color == PlayerColor.BLUE:
-        forward_sign = -1
-
-    if isinstance(action, GrowAction):
-        return grow_score
-
-    heuristic = heuristic + len(action.directions)
-    for move in action.directions:
-        m_forward = DIRECTION_DICT[move][0]
-        if m_forward != 0:
-            heuristic += m_forward * forward_mult
-        else:
-            heuristic += 1
-    return heuristic

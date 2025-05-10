@@ -88,7 +88,6 @@ def get_valid_moves(board: AgentBoard, color: PlayerColor):
             ):
                 valid_moves.append(MoveAction(Coord(frog_t[0], frog_t[1]), dir))
 
-        # Find all possible hop sequences starting from this frog
         get_valid_hops(frog_t)
 
     valid_moves.append(GrowAction())

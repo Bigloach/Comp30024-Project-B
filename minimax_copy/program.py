@@ -1,12 +1,15 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from .minimax_copy import minimax_copy, minimax_k_copy
-from .move_utils import get_valid_moves
+from referee.game.actions import GrowAction
+from .minimax import negamax
 from .board import AgentBoard
-from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
+from referee.game import PlayerColor, Action
+import time
 
-DEPTH = 5 
+DEPTH = 5
+MAX_TURNS = 75
+MAX_TURN_TIME = 10.0
 
 
 class Agent:
@@ -22,7 +25,7 @@ class Agent:
         """
         self._color = color
         self.board = AgentBoard(None, None, None)
-
+        self.turns = 1
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as RED")
@@ -39,17 +42,38 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
+
         killer_actions = [[None, None] for i in range(DEPTH)]
-        _, best_action = minimax_k_copy(
-            self.board.copy(),
-            self._color,
-            DEPTH,
-            float("-inf"),
-            float("inf"),
-            True,
-            self._color,
-            killer_actions,
-        )
+
+        time_rem = referee["time_remaining"]
+        curr_turn = self.turns
+        start_time = time.process_time()
+        if curr_turn == MAX_TURNS:
+            allowed_time = time_rem
+        else:
+            if curr_turn <= 10:
+                allowed_time = (time_rem / (MAX_TURNS - self.turns)) * 0.7
+            elif curr_turn <= 40:
+                allowed_time = (time_rem / (MAX_TURNS - self.turns)) * 1.6
+            else:
+                allowed_time = time_rem / (MAX_TURNS - self.turns)
+
+        if allowed_time > MAX_TURN_TIME:
+            allowed_time = MAX_TURN_TIME
+
+        for depth in range(1, DEPTH + 1):
+            best_action = negamax(
+                self.board.copy(),
+                DEPTH,
+                self._color,
+                float("-inf"),
+                float("inf"),
+                killer_actions,
+            )[1]
+            if time.process_time() - start_time > allowed_time:
+                break
+
+        self.turns += 1
         return best_action
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
@@ -63,4 +87,3 @@ class Agent:
         # action for demonstration purposes. You should replace this with your
         # own logic to update your agent's internal game state representation.
         self.board.apply_action(action, color)
-        print(referee["time_remaining"])

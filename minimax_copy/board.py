@@ -1,30 +1,15 @@
 import numpy as np
 
-from minimax.utils import is_within_board
+
 from referee.game.constants import BOARD_N, MAX_TURNS
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
+from referee.game.exceptions import IllegalActionException
 
 # Defined states in the board
 EMPTY = 0
 RED = 1
 BLUE = 2
 LILY = 3
-
-RED_DIRECTIONS = [
-    Direction.Right,
-    Direction.Left,
-    Direction.Down,
-    Direction.DownLeft,
-    Direction.DownRight,
-]
-
-BLUE_DIRECTIONS = [
-    Direction.Right,
-    Direction.Left,
-    Direction.Up,
-    Direction.UpLeft,
-    Direction.UpRight,
-]
 
 DIRECTION_DICT = {
     Direction.Up: (-1, 0),
@@ -44,8 +29,7 @@ class AgentBoard:
         self.state = initial_state
         self.reds = initial_red
         self.blues = initial_blue
-        self.turns = turns
-
+        self.turns = 0
         if initial_state is None:
             self.state = np.zeros((BOARD_N, BOARD_N), dtype=np.int8)
             self.reds = set()
@@ -69,8 +53,10 @@ class AgentBoard:
         match action:
             case MoveAction(coord, direction):
                 self.resolve_move(action, color)
+                self.turns += 1
             case GrowAction():
                 self.resolve_grow(color)
+                self.turns += 1
             case _:
                 raise IllegalActionException(f"Unknown action {action}", color)
 
@@ -104,8 +90,6 @@ class AgentBoard:
             self.blues.remove((action_r, action_c))
             self.blues.add((curr_pos_r, curr_pos_c))
 
-        self.turns += 1
-
     def resolve_grow(self, color: PlayerColor):
 
         if color == PlayerColor.RED:
@@ -117,14 +101,12 @@ class AgentBoard:
         for cell in player_cells:
             for direction in DIRECTION_DICT.values():
                 neighbour = (cell[0] + direction[0], cell[1] + direction[1])
-                if is_within_board(neighbour):
+                if 0 <= neighbour[0] < BOARD_N and 0 <= neighbour[1] < BOARD_N:
                     neighbour_cells.add(neighbour)
 
         for cell in neighbour_cells:
             if self.state[cell[0], cell[1]] == EMPTY:
                 self.state[cell[0], cell[1]] = LILY
-
-        self.turns += 1
 
     def get_game_result(self, color: PlayerColor):
         winner = self.get_winner()

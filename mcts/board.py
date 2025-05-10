@@ -29,7 +29,8 @@ class AgentBoard:
         self.state = initial_state
         self.reds = initial_red
         self.blues = initial_blue
-        self.turns = 0
+        self.turns = turns
+
         if initial_state is None:
             self.state = np.zeros((BOARD_N, BOARD_N), dtype=np.int8)
             self.reds = set()
@@ -53,10 +54,8 @@ class AgentBoard:
         match action:
             case MoveAction(coord, direction):
                 self.resolve_move(action, color)
-                self.turns += 1
             case GrowAction():
                 self.resolve_grow(color)
-                self.turns += 1
             case _:
                 raise IllegalActionException(f"Unknown action {action}", color)
 
@@ -90,6 +89,10 @@ class AgentBoard:
             self.blues.remove((action_r, action_c))
             self.blues.add((curr_pos_r, curr_pos_c))
 
+        self.turns += 1
+
+        # return ((action_r, action_c), (curr_pos_r, curr_pos_c))
+
     def resolve_grow(self, color: PlayerColor):
 
         if color == PlayerColor.RED:
@@ -107,6 +110,8 @@ class AgentBoard:
         for cell in neighbour_cells:
             if self.state[cell[0], cell[1]] == EMPTY:
                 self.state[cell[0], cell[1]] = LILY
+
+        self.turns += 1
 
     def get_game_result(self, color: PlayerColor):
         winner = self.get_winner()
@@ -160,3 +165,25 @@ class AgentBoard:
         return AgentBoard(
             self.state.copy(), self.blues.copy(), self.reds.copy(), self.turns
         )
+
+    def backtrack(self, prev: tuple, current: tuple):
+        if self.state[current[0], current[1]] == RED:
+            self.reds.remove(current)
+            self.reds.add(prev)
+            color = RED
+        elif self.state[current[0], current[1]] == BLUE:
+            self.blues.remove(current)
+            self.blues.add(prev)
+            color = BLUE
+        else:
+            raise IllegalActionException(
+                f"'{current}' is not a forg.", self._turn_color
+            )
+
+        if self.state[prev[0], prev[1]] == LILY:
+            self.state[prev[0], prev[1]] = color
+            self.state[current[0], current[1]] = LILY
+        else:
+            raise IllegalActionException(
+                f"'{prev}' is not a lily pad.", self._turn_color
+            )
