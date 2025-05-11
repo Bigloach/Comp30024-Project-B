@@ -6,7 +6,7 @@ from .board import AgentBoard
 from referee.game import PlayerColor, Action
 import time
 
-DEPTH = 5
+DEPTH = 6
 MAX_TURNS = 75
 MAX_TURN_TIME = 10.0
 
