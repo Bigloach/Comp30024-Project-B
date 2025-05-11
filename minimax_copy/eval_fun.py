@@ -3,7 +3,7 @@ This file contains evaluation function for cut off and
 possible herustics for simulation
 """
 
-from minimax.move_utils import BLUE_DIR, RED_DIR
+from agent.move_utils import BLUE_DIR, RED_DIR
 from referee.game import PlayerColor
 from referee.game.actions import Action, GrowAction
 from referee.game.constants import BOARD_N

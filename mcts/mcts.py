@@ -1,3 +1,5 @@
+# This file contains MCTS functions and node class representation
+
 import math
 import random
 
@@ -11,6 +13,10 @@ MAX_ITER = 200
 
 
 class MCTS_node:
+    """
+    Class for a MCTS node represnetation and contains relevant operations
+    """
+
     def __init__(self, board: AgentBoard, turn_color: PlayerColor, parent):
         self.board = board
         self.turn_color = turn_color
@@ -21,7 +27,9 @@ class MCTS_node:
         self.actions = None
 
     def expand(self):
-
+        """
+        Expand process of MCTS by creating a new child node to a parent node
+        """
         if self.actions is None:
             self.actions = get_valid_moves(self.board, self.turn_color)
             random.shuffle(self.actions)
@@ -80,8 +88,13 @@ class MCTS_node:
 def search_best_action(
     root: MCTS_node, time_limit=float("inf")
 ) -> tuple[MCTS_node, Action]:
+    """
+    Run the whole MCTS process and return the node
+    that has most playouts as the best action
+    """
     iterations = 0
 
+    # Repeat the whole process until reaching the limit
     while iterations < MAX_ITER:
         curr_node = root
         while curr_node is not None and not curr_node.board.is_game_over():
@@ -101,6 +114,10 @@ def search_best_action(
 
 
 def simulation(board: AgentBoard, player_color: PlayerColor):
+    """
+    Simulation process for MCTS,
+    randomly choose action to explore until the game end
+    """
     curr_state = board
     turn_color = player_color
 

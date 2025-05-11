@@ -1,121 +1,156 @@
-"""
-This file contains evaluation function for cut off and
-possible herustics for simulation
-"""
+# This file contains evaluation function for cut off and
+# possible herustics for simulation
 
-import random
+from agent.move_utils import BLUE_DIR, RED_DIR
 from referee.game import PlayerColor
-from referee.game.actions import MoveAction
+from referee.game.actions import Action, GrowAction
 from referee.game.constants import BOARD_N
-from referee.game.coord import Direction
-from .board import BLUE_DIRECTIONS, LILY, RED, BLUE, EMPTY, RED_DIRECTIONS, AgentBoard
-from .move_utils import is_in_board
+from .board import (
+    DIRECTION_DICT,
+    LILY,
+    RED,
+    BLUE,
+    EMPTY,
+    AgentBoard,
+)
 
 
 def evaluate_state(board: AgentBoard, color: PlayerColor) -> float:
-    own_color = RED if color == PlayerColor.RED else BLUE
-    opp_color = BLUE if color == PlayerColor.RED else RED
+    """
+    This function evaluates a board state
+    based on color
+    """
+    if color == PlayerColor.RED:
+        player_frogs = board.reds
+        opponent_frogs = board.blues
+        player_directions = RED_DIR
+    else:
+        player_frogs = board.blues
+        opponent_frogs = board.reds
+        player_directions = BLUE_DIR
 
-    own_directions = RED_DIRECTIONS if color == PlayerColor.RED else BLUE_DIRECTIONS
-    opp_directions = RED_DIRECTIONS if color == PlayerColor.BLUE else BLUE_DIRECTIONS
+    if color == PlayerColor.RED:
+        color = RED
+    else:
+        color = BLUE
 
-    own_frogs = board.reds if color == PlayerColor.RED else board.blues
-    opp_frogs = board.blues if color == PlayerColor.RED else board.reds
+    col_dirs = [-1, 0, 1]
+    player_distances = 0
+    row_sum = 0
+    col_frogs = [0] * BOARD_N
+    for frog in player_frogs:
+        row_sum += frog[0]
+        col_frogs[frog[1]] += 1
+        if color == BLUE:
+            distance = frog[0]
+        else:
+            distance = BOARD_N - 1 - frog[0]
+        if (color == RED and frog[0] >= 4) or (color == BLUE and frog[0] <= 3):
+            for dir in col_dirs:
+                col = frog[1] + dir
+                if 0 <= col < BOARD_N:
+                    row = frog[0] + 1 if color == RED else frog[0] - 1
+                    if 0 <= row < BOARD_N and board.state[row, col] in [RED, BLUE]:
+                        distance += 1
+        player_distances += distance
 
-    own_score = board.get_player_score(own_color)
-    opp_score = board.get_player_score(opp_color)
+    opponent_distances = 0
+    for frog in opponent_frogs:
+        if color == RED:
+            distance = frog[0]
+        else:
+            distance = BOARD_N - 1 - frog[0]
+        if (color == RED and frog[0] <= 3) or (color == BLUE and frog[0] >= 4):
+            for dir in col_dirs:
+                col = frog[1] + dir
+                if 0 <= col < BOARD_N:
+                    row = frog[0] - 1 if color == RED else frog[0] + 1
+                    if 0 <= row < BOARD_N and board.state[row, col] in [RED, BLUE]:
+                        distance += 1
+        opponent_distances += distance
 
-    own_distances = sum(
-        frog.r if color == PlayerColor.BLUE else (7 - frog.r) for frog in own_frogs
-    )
+    average_row = row_sum / (BOARD_N - 2)
+    central_adjust = abs(average_row - (BOARD_N - 1 if color == RED else 0))
 
-    opp_distances = sum(
-        frog.r if color == PlayerColor.RED else (7 - frog.r) for frog in opp_frogs
-    )
-
-    advancement = opp_distances - own_distances
-
-    pad_count = 0
-    for frog in own_frogs:
-        for dir in own_directions:
-            try:
-                adj = frog + dir
-                if is_in_board(adj) and board.state[adj.r, adj.c] == LILY:
-                    pad_count += 1
-            except ValueError:
-                continue
-
-    jump_opportunities = 0
-    for frog in own_frogs:
-        for dir in own_directions:
-            try:
-                mid = frog + dir
-                dest = mid + dir
-                if is_in_board(dest):
-                    if (
-                        board.state[mid.r, mid.c] in [RED, BLUE]
-                        and board.state[dest.r, dest.c] == LILY
+    hop_forward = 0
+    hop_opporunities = 0
+    for frog in player_frogs:
+        for dir in player_directions.values():
+            mid = (frog[0] + dir[0], frog[1] + dir[1])
+            dest = (mid[0] + dir[0], mid[1] + dir[1])
+            if 0 <= dest[0] < BOARD_N and 0 <= dest[1] < BOARD_N:
+                if (
+                    board.state[mid[0], mid[1]] in [RED, BLUE]
+                    and board.state[dest[0], dest[1]] == LILY
+                ):
+                    hop_opporunities += 1
+                    if (color == RED and dest[0] > frog[0]) or (
+                        color == BLUE and dest[0] < frog[0]
                     ):
-                        jump_opportunities += 1
-            except:
-                continue
+                        hop_forward += 1
 
-    threat_level = 0
-    for frog in opp_frogs:
-        for dir in opp_directions:
-            try:
-                mid = frog + dir
-                dest = mid + dir
-                if is_in_board(dest):
-                    if (
-                        board.state[mid.r, mid.c] in [RED, BLUE]
-                        and board.state[dest.r, dest.c] == LILY
-                    ):
-                        threat_level += 1
-            except:
-                continue
+    target_row = BOARD_N - 1 if color == RED else 0
+    line_value = 0
+    blocking_cols = set()
+    for col in range(BOARD_N):
+        cell = board.state[target_row, col]
+        if cell == LILY:
+            line_value += 4
+        elif cell == EMPTY:
+            line_value += 3
+        elif cell != color:
+            line_value += 2
+            blocking_cols.add(col)
+        elif cell == color:
+            line_value += 1
+            blocking_cols.add(col)
 
-    return float(
-        # 100.0 * (own_score - opp_score) +
-        30.0 * advancement
-        + 10.0 * pad_count
-        + 3.0 * jump_opportunities
-        - 2.0 * threat_level
+    uneven_frogs_penalty = max(col_frogs) - min(col_frogs)
+    column_blocking = sum(col_frogs[c] for c in blocking_cols)
+
+    return (
+        15.0 * opponent_distances
+        + line_value
+        + 1 * hop_opporunities
+        + 5 * hop_forward
+        - 15 * player_distances
+        - 3 * central_adjust
+        - 2 * uneven_frogs_penalty
+        - 3 * column_blocking
     )
 
 
-def choose_with_heuristic(actions, board: AgentBoard, color: PlayerColor):
-    END_SCORE = 15.0
-    HOP_SCORE = 6.0
-    FORWARD_SCORE = 5.0
-    FORWARD_MULT = 2.0
-    GROW_SCORE = 0.5
+def action_heuristic(action: Action, color: PlayerColor, killer_actions):
+    """
+    This function assigns heuristic priority to a action
+    based on static evaluation and killer heuristic
+    """
+    heuristic = 0.0
+    grow_score = 2.0
+    forward_mult = 4.0
+    forward_sign = 1
+    killer_score = 100.0
+    forward_mult *= forward_sign
 
-    if len(actions) == 1:
-        return actions[0]
-    dest_row = BOARD_N - 1 if color == PlayerColor.RED else 0
+    if killer_actions is not None:
+        # Assign the first killer action with highest priority
+        if action == killer_actions[0]:
+            return killer_score
+        elif action == killer_actions[1]:
+            return killer_score - 1
 
-    action_scores = []
-    for action in actions:
-        score = 1.0 
-        if isinstance(action, MoveAction):
-            start = action.coord
-            dest = action.coord
-            if not board.is_single_move(action):
-                for dir in action.directions:
-                    dest = dest + dir + dir
-                score += HOP_SCORE
-            else:
-                dest += action.directions[0]
-            
-            forward = abs(dest.r - start.r)
-            if forward > 0:
-                score += FORWARD_SCORE
-            score += forward * FORWARD_MULT
+    if color == PlayerColor.BLUE:
+        forward_sign = -1
 
-            if dest.r == dest_row:
-                score += END_SCORE 
-         
-        action_scores.append(score)
+    if isinstance(action, GrowAction):
+        return grow_score
 
-    return random.choices(actions, weights=action_scores, k=1)[0]
+    # Assign priority based on static evaluation
+    heuristic = heuristic + len(action.directions)
+    for move in action.directions:
+        m_forward = DIRECTION_DICT[move][0]
+        if m_forward != 0:
+            heuristic += m_forward * forward_mult
+        else:
+            heuristic += 1
+    return heuristic

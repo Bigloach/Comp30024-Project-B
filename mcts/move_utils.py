@@ -1,3 +1,4 @@
+# This file contains helper functions to generate actions for frogs
 from collections import deque
 from .board import AgentBoard, BLUE, RED, LILY
 from referee.game import (

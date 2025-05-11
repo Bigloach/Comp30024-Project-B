@@ -165,25 +165,3 @@ class AgentBoard:
         return AgentBoard(
             self.state.copy(), self.blues.copy(), self.reds.copy(), self.turns
         )
-
-    def backtrack(self, prev: tuple, current: tuple):
-        if self.state[current[0], current[1]] == RED:
-            self.reds.remove(current)
-            self.reds.add(prev)
-            color = RED
-        elif self.state[current[0], current[1]] == BLUE:
-            self.blues.remove(current)
-            self.blues.add(prev)
-            color = BLUE
-        else:
-            raise IllegalActionException(
-                f"'{current}' is not a forg.", self._turn_color
-            )
-
-        if self.state[prev[0], prev[1]] == LILY:
-            self.state[prev[0], prev[1]] = color
-            self.state[current[0], current[1]] = LILY
-        else:
-            raise IllegalActionException(
-                f"'{prev}' is not a lily pad.", self._turn_color
-            )

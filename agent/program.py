@@ -1,13 +1,15 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from .mcts import MCTS_node, search_best_action
+from referee.game.actions import GrowAction
+from .minimax import negamax
 from .board import AgentBoard
-from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
+from referee.game import PlayerColor, Action
+import time
 
-TIME_FRACTION = 0.05
-MAX_TURN_TIME = 5
-MIN_TURN_TIME = 0.3
+DEPTH = 5
+MAX_TURNS = 75
+MAX_TURN_TIME = 10.0
 
 
 class Agent:
@@ -23,8 +25,7 @@ class Agent:
         """
         self._color = color
         self.board = AgentBoard(None, None, None)
-        self.mcts_root = None
-
+        self.turns = 1
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as RED")
@@ -42,37 +43,42 @@ class Agent:
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
 
-        time_remaining = referee["time_remaining"]
-        time_limit = MAX_TURN_TIME
+        killer_actions = [[None, None] for i in range(DEPTH)]
 
-        if time_remaining is not None:
-            time_limit = time_remaining * TIME_FRACTION  # type: ignore
-            if time_limit > MAX_TURN_TIME:
-                time_limit = MAX_TURN_TIME
-            elif time_remaining < time_limit < MIN_TURN_TIME:
-                time_limit = MIN_TURN_TIME
-            elif time_limit < time_remaining:
-                time_limit = time_remaining
+        time_rem = referee["time_remaining"]
+        curr_turn = self.turns
+        start_time = time.process_time()
 
-        if (
-            self.mcts_root is None
-            or self.mcts_root.board.state.tobytes() != self.board.state.tobytes()  # type: ignore
-        ):
-            self.mcts_root = MCTS_node(self.board.copy(), self._color, None)
+        # Assign time limit for each turn, giving early turns less
+        # time and mid-game turns more time
+        if curr_turn == MAX_TURNS:
+            allowed_time = time_rem
+        else:
+            if curr_turn <= 10:
+                allowed_time = (time_rem / (MAX_TURNS - self.turns)) * 0.7
+            elif curr_turn <= 40:
+                allowed_time = (time_rem / (MAX_TURNS - self.turns)) * 1.6
+            else:
+                allowed_time = time_rem / (MAX_TURNS - self.turns)
 
-        child, action = search_best_action(self.mcts_root) # type: ignore
+        if allowed_time > MAX_TURN_TIME:
+            allowed_time = MAX_TURN_TIME
 
-        if child:
-            self.mcts_root = child
-            self.mcts_root.parent = None
+        for depth in range(1, DEPTH + 1):
+            best_action = negamax(
+                self.board.copy(),
+                depth,
+                self._color,
+                float("-inf"),
+                float("inf"),
+                killer_actions,
+            )[1]
+            # Stop at particular depth if time limit is reached
+            if time.process_time() - start_time > allowed_time:
+                break
 
-        return action
-
-        # match self._color:
-        #     case PlayerColor.RED:
-        #         print("Testing: RED is playing a MOVE action")
-        #     case PlayerColor.BLUE:
-        #         print("Testing: BLUE is playing a GROW action")
+        self.turns += 1
+        return best_action
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
@@ -85,12 +91,3 @@ class Agent:
         # action for demonstration purposes. You should replace this with your
         # own logic to update your agent's internal game state representation.
         self.board.apply_action(action, color)
-        print("current time remaining: %f", referee["time_remaining"])
-        if color == self._color.opponent and self.mcts_root is not None:
-            for child in self.mcts_root.children:
-                if child[1] == action:
-                    self.mcts_root = child[0]
-                    self.mcts_root.parent = None
-                    return
-
-        self.mcts_root = None

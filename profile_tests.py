@@ -1,14 +1,21 @@
+# Profiling script for agent programs
+
 import cProfile
 import pstats
 import io
 import numpy as np
 
-from minimax.board import AgentBoard, PlayerColor, RED, BLUE, LILY, EMPTY, BOARD_N
-from minimax.eval_fun import evaluate_state
-from minimax.minimax import negamax
+from agent.board import AgentBoard, PlayerColor, RED, BLUE, LILY, EMPTY, BOARD_N
+from agent.eval_fun import evaluate_state
+from agent.minimax import negamax
 
 
 def generate_complex_board():
+    """
+    This function constructs a complex
+    board state with high branching factor 
+    to test the program efficiency
+    """
     state = np.array(
         [
             [3, 0, 3, 0, 0, 3, 0, 3],
@@ -58,8 +65,8 @@ def test_minimax(board, iterations=10):
         for depth in range(1, 6):
             negamax(
                 board.copy(),
-                5,
-                PlayerColor.BLUE,
+                depth,
+                PlayerColor.RED,
                 float("-inf"),
                 float("inf"),
                 killer_actions,

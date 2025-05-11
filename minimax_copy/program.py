@@ -64,7 +64,7 @@ class Agent:
         for depth in range(1, DEPTH + 1):
             best_action = negamax(
                 self.board.copy(),
-                DEPTH,
+                depth,
                 self._color,
                 float("-inf"),
                 float("inf"),

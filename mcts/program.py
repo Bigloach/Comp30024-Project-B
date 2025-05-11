@@ -5,6 +5,7 @@ from .mcts import MCTS_node, search_best_action
 from .board import AgentBoard
 from referee.game import PlayerColor, Coord, Direction, Action, MoveAction, GrowAction
 
+
 class Agent:
     """
     This class is the "entry point" for your agent, providing an interface to
@@ -37,14 +38,17 @@ class Agent:
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
 
+        # Create a new tree if the root state of the tree
+        # is different from the board state
         if (
             self.mcts_root is None
-            or self.mcts_root.board.state.tobytes() != self.board.state.tobytes()  
+            or self.mcts_root.board.state.tobytes() != self.board.state.tobytes()
         ):
             self.mcts_root = MCTS_node(self.board.copy(), self._color, None)
 
-        child, action = search_best_action(self.mcts_root) 
+        child, action = search_best_action(self.mcts_root)
 
+        # Reuse the tree for the next turn by deleting the current parent node
         if child:
             self.mcts_root = child
             self.mcts_root.parent = None
@@ -64,10 +68,10 @@ class Agent:
         self.board.apply_action(action, color)
         if color == self._color.opponent and self.mcts_root is not None:
             for child in self.mcts_root.children:
+                # Reuse the tree for the next turn by deleting the current parent node
                 if child[1] == action:
                     self.mcts_root = child[0]
                     self.mcts_root.parent = None
                     return
 
         self.mcts_root = None
-        
