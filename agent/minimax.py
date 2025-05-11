@@ -1,7 +1,6 @@
 # This file contains main minimax with alpha-beta pruning algorithm implementation
 # through negamax
 
-from socket import herror
 from .eval_fun import action_heuristic, evaluate_state
 from .move_utils import get_valid_moves
 from .board import AgentBoard
